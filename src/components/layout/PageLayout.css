@@ -1,0 +1,33 @@
+.page-root {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+    text-align: center;
+    font-size: 2rem;
+    color: #222;
+}
+
+.page-header p {
+    font-size: 1rem;
+    color: #555;
+    margin-top: 0.35rem;
+}
+
+.page-main {
+    margin-top: 1rem;
+}
+
+.page-footer {
+    margin-top: 2rem;
+    text-align: center;
+    color: #666;
+    font-size: 0.85rem;
+}
