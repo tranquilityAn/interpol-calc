@@ -124,7 +124,7 @@ export default function App() {
         setErrors([]);
     };
 
-    const disabledRun = !table || !X || Boolean(errors.length);
+    const disabledRun = !table || !X;
 
     return (
         <PageLayout>

@@ -1,46 +1,3 @@
-// import type {
-//     TabularFunction,
-//     PointsToEvaluate,
-//     InterpolationResult,
-//     DerivativeResult,
-// } from "../../types/tabular";
-
-// type TaskType = "interpolation" | "differentiation";
-
-// interface CombinedChartProps {
-//     task: TaskType;
-//     table: TabularFunction | null;
-//     X: PointsToEvaluate | null;
-//     interpolationResult: InterpolationResult | null;
-//     derivativeResult: DerivativeResult | null;
-// }
-
-// export function CombinedChart({
-//     task,
-//     table,
-//     X,
-//     interpolationResult,
-//     derivativeResult,
-// }: CombinedChartProps) {
-//     const hasData =
-//         !!table && !!X && (!!interpolationResult || !!derivativeResult);
-
-//     return (
-//         <section>
-//             <h2>Results (graph)</h2>
-//             {!hasData && <p>Not enough data to build a chart.</p>}
-//             {hasData && (
-//                 <div className="chart-placeholder">
-//                     <p>
-//                         A chart of the original tabulated function and the
-//                         computed result for the selected task ({task}) will be
-//                         displayed here.
-//                     </p>
-//                 </div>
-//             )}
-//         </section>
-//     );
-// }
 import {
     LineChart,
     Line,
@@ -69,12 +26,6 @@ interface CombinedChartProps {
     derivativeResult: DerivativeResult | null;
 }
 
-interface ChartPoint {
-    x: number;
-    original?: number;
-    result?: number;
-}
-
 export function CombinedChart({
     task,
     table,
@@ -82,63 +33,53 @@ export function CombinedChart({
     interpolationResult,
     derivativeResult,
 }: CombinedChartProps) {
-    const hasBaseData = !!table && !!table.x.length && !!table.f.length;
-    const hasEvalPoints = !!X && X.length > 0;
-    const hasInterpolation = task === "interpolation" && !!interpolationResult;
-    const hasDerivative = task === "differentiation" && !!derivativeResult;
+    const hasTable = !!table?.x.length && !!table?.f.length;
+    const hasX = !!X?.length;
+    const hasInterp = task === "interpolation" && !!interpolationResult;
+    const hasDeriv = task === "differentiation" && !!derivativeResult;
 
-    if (!hasBaseData) {
+    if (!hasTable) {
         return (
             <section>
                 <h2>Results (graph)</h2>
-                <p>No base tabular data to display a chart.</p>
+                <p>No base tabulated data.</p>
             </section>
         );
     }
 
-    if (!hasEvalPoints || (!hasInterpolation && !hasDerivative)) {
+    if (!hasX || (!hasInterp && !hasDeriv)) {
         return (
             <section>
                 <h2>Results (graph)</h2>
-                <p>
-                    Not enough computed data to display a chart. Load data and
-                    run computation first.
-                </p>
+                <p>No computed values to visualize.</p>
             </section>
         );
     }
 
-    // Build a combined dataset for Recharts:
-    // - original tabular function: x vs f
-    // - result: X vs F or F'
-    const dataMap = new Map<number, ChartPoint>();
-
-    // 1) Original tabular points
-    table!.x.forEach((xVal, i) => {
-        const yVal = table!.f[i];
-        const existing = dataMap.get(xVal) || { x: xVal };
-        existing.original = yVal;
-        dataMap.set(xVal, existing);
-    });
-
-    // 2) Result points (interpolation or derivative)
-    if (hasInterpolation && interpolationResult) {
-        interpolationResult.X.forEach((xVal, i) => {
-            const yVal = interpolationResult.F[i];
-            const existing = dataMap.get(xVal) || { x: xVal };
-            existing.result = yVal;
-            dataMap.set(xVal, existing);
-        });
-    } else if (hasDerivative && derivativeResult) {
-        derivativeResult.X.forEach((xVal, i) => {
-            const yVal = derivativeResult.Fd[i];
-            const existing = dataMap.get(xVal) || { x: xVal };
-            existing.result = yVal;
-            dataMap.set(xVal, existing);
-        });
+    interface ChartPoint {
+        x: number;
+        result?: number;
     }
 
-    const chartData = Array.from(dataMap.values()).sort((a, b) => a.x - b.x);
+    // Build separate datasets for the two series
+    const originalData = table!.x.map((x, i) => ({
+        x,
+        original: table!.f[i],
+    }));
+
+    let resultData: ChartPoint[] = [];
+
+    if (hasInterp && interpolationResult) {
+        resultData = interpolationResult.X.map((x, i) => ({
+            x,
+            result: interpolationResult.F[i],
+        }));
+    } else if (hasDeriv && derivativeResult) {
+        resultData = derivativeResult.X.map((x, i) => ({
+            x,
+            result: derivativeResult.Fd[i],
+        }));
+    }
 
     const resultLabel =
         task === "interpolation" ? "Interpolated F(X)" : "Derivative F'(X)";
@@ -146,15 +87,17 @@ export function CombinedChart({
     return (
         <section>
             <h2>Results (graph)</h2>
-            <div style={{ width: "100%", height: 320 }}>
+            <div style={{ width: "100%", height: 340 }}>
                 <ResponsiveContainer>
                     <LineChart
-                        data={chartData}
-                        margin={{ top: 10, right: 20, bottom: 10, left: 0 }}
+                        margin={{ top: 20, right: 20, left: 0, bottom: 0 }}
                     >
-                        <CartesianGrid strokeDasharray="3 3" />
+                        <CartesianGrid strokeDasharray="4 4" />
+
                         <XAxis
                             dataKey="x"
+                            type="number"
+                            domain={["auto", "auto"]}
                             label={{
                                 value: "x",
                                 position: "insideBottom",
@@ -162,25 +105,34 @@ export function CombinedChart({
                             }}
                         />
                         <YAxis />
+
                         <Tooltip />
                         <Legend />
 
-                        {/* Original tabulated function */}
+                        {/* ORIGINAL FUNCTION */}
                         <Line
+                            name="Tabulated f(x)"
+                            data={originalData}
                             type="monotone"
                             dataKey="original"
-                            name="Tabulated f(x)"
-                            dot={{ r: 3 }}
+                            stroke="#4361ee"
                             strokeWidth={2}
+                            strokeDasharray="0"
+                            dot={{ r: 3 }}
+                            activeDot={{ r: 5 }}
                         />
 
-                        {/* Result: interpolated or derivative */}
+                        {/* RESULT FUNCTION */}
                         <Line
+                            name={resultLabel}
+                            data={resultData}
                             type="monotone"
                             dataKey="result"
-                            name={resultLabel}
-                            dot={{ r: 3 }}
+                            stroke={task === "interpolation" ? "#e63946" : "#2a9d8f"}
                             strokeWidth={2}
+                            strokeDasharray={"10 4 2 4"}
+                            dot={{ r: 4 }}
+                            activeDot={{ r: 6 }}
                         />
                     </LineChart>
                 </ResponsiveContainer>

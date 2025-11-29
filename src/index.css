@@ -20,6 +20,10 @@ h3 {
     margin-bottom: 0.5rem;
 }
 
+li {
+    margin-left: 20px;
+}
+
 section {
     padding: 1rem 1.25rem;
     margin-top: 1.25rem;

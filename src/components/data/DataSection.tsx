@@ -330,9 +330,6 @@ export function DataSection({
                     <div style={{ marginTop: "0.75rem" }}>
                         <label>
                             <strong>Evaluation points (X):</strong>{" "}
-                            <span style={{ color: "#666", fontSize: "0.9rem" }}>
-                                (optional, but required before computation)
-                            </span>
                         </label>
                         <textarea
                             rows={2}
