@@ -81,3 +81,4 @@ export {
     differentiateByApproximation5,
     differentiateByApproximation5Raw,
 };
+export { buildDifferentiationMethodsSummary } from "./methodsSummary";

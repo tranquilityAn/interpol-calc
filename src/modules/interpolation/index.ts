@@ -31,7 +31,6 @@ export function interpolate(
         case "newton":
             return interpolateNewton(table, X);
         default:
-            // TypeScript не дасть сюди потрапити, але на всяк випадок:
             throw new MethodNotSupportedError(
                 `Interpolation method "${String(method)}" is not supported.`
             );
@@ -66,10 +65,10 @@ export function interpolateRaw(
     }
 }
 
-// Опціонально: реекспортуємо конкретні реалізації, якщо десь треба напряму
 export {
     interpolateLagrange,
     interpolateLagrangeRaw,
     interpolateNewton,
     interpolateNewtonRaw,
 };
+export { buildInterpolationMethodsSummary } from "./methodsSummary";

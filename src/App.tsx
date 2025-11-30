@@ -10,10 +10,18 @@ import type {
 import type { InterpolationMethod } from "./types/interpolation";
 import type { DifferentiationMethod } from "./types/differentiation";
 import type { AppError } from "./types/ui";
+import type { InterpolationMethodsSummary } from "./types/interpolation";
+import type { DifferentiationMethodsSummary } from "./types/differentiation";
 
 import { TabularDataError, MethodNotSupportedError } from "./types/errors";
-import { interpolate } from "./modules/interpolation";
-import { differentiate } from "./modules/differentiation";
+import {
+    interpolate,
+    buildInterpolationMethodsSummary,
+} from "./modules/interpolation";
+import {
+    differentiate,
+    buildDifferentiationMethodsSummary,
+} from "./modules/differentiation";
 
 import { PageLayout } from "./components/layout/PageLayout";
 import { TaskSelector } from "./components/controls/TaskSelector";
@@ -23,6 +31,7 @@ import { RunButton } from "./components/controls/RunButton";
 import { ErrorList } from "./components/data/ErrorList";
 import { ResultsTable } from "./components/data/ResultsTable";
 import { CombinedChart } from "./components/charts/CombinedChart";
+import { SummaryTable } from "./components/summary/SummaryTable";
 
 type TaskType = "interpolation" | "differentiation";
 
@@ -42,6 +51,12 @@ export default function App() {
 
     const [errors, setErrors] = useState<AppError[]>([]);
 
+    const [interpolationSummary, setInterpolationSummary] =
+        useState<InterpolationMethodsSummary | null>(null);
+
+    const [differentiationSummary, setDifferentiationSummary] =
+        useState<DifferentiationMethodsSummary | null>(null);
+
     const makeError = (message: string): AppError => ({
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
         message,
@@ -60,6 +75,8 @@ export default function App() {
         // Clear results when task changes
         setInterpolationResult(null);
         setDerivativeResult(null);
+        setInterpolationSummary(null);
+        setDifferentiationSummary(null);
         setErrors([]);
     };
 
@@ -70,6 +87,8 @@ export default function App() {
             ]);
             setInterpolationResult(null);
             setDerivativeResult(null);
+            setInterpolationSummary(null);
+            setDifferentiationSummary(null);
             return;
         }
 
@@ -77,6 +96,8 @@ export default function App() {
             setErrors([makeError("The list of evaluation points X is empty.")]);
             setInterpolationResult(null);
             setDerivativeResult(null);
+            setInterpolationSummary(null);
+            setDifferentiationSummary(null);
             return;
         }
 
@@ -88,11 +109,17 @@ export default function App() {
                 const result = interpolate(interpolationMethod, table, X);
                 setInterpolationResult(result);
                 setDerivativeResult(null);
+                const summary = buildInterpolationMethodsSummary(table, X);
+                setInterpolationSummary(summary);
+                setDifferentiationSummary(null);
             } else {
                 const differentiationMethod = method as DifferentiationMethod;
                 const result = differentiate(differentiationMethod, table, X);
                 setDerivativeResult(result);
                 setInterpolationResult(null);
+                const summary = buildDifferentiationMethodsSummary(table, X);
+                setDifferentiationSummary(summary);
+                setInterpolationSummary(null);
             }
         } catch (e) {
             console.error("Computation error:", e);
@@ -110,6 +137,8 @@ export default function App() {
             setErrors([makeError(message)]);
             setInterpolationResult(null);
             setDerivativeResult(null);
+            setInterpolationSummary(null);
+            setDifferentiationSummary(null);
         }
     };
 
@@ -121,6 +150,8 @@ export default function App() {
         setX(nextX);
         setInterpolationResult(null);
         setDerivativeResult(null);
+        setInterpolationSummary(null);
+        setDifferentiationSummary(null);
         setErrors([]);
     };
 
@@ -145,6 +176,12 @@ export default function App() {
                 task={task}
                 interpolationResult={interpolationResult}
                 derivativeResult={derivativeResult}
+            />
+
+            <SummaryTable
+                task={task}
+                interpolationSummary={interpolationSummary}
+                differentiationSummary={differentiationSummary}
             />
 
             <CombinedChart

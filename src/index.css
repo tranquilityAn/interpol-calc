@@ -122,3 +122,38 @@ button:disabled,
     text-align: center;
     color: #555;
 }
+
+.summary-section {
+    margin-top: 1.5rem;
+}
+
+.summary-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.summary-stats {
+    margin-bottom: 0.75rem;
+    color: #555;
+}
+
+.summary-table-wrapper {
+    overflow-x: auto;
+}
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.summary-table th,
+.summary-table td {
+    border: 1px solid #ddd;
+    padding: 0.35rem 0.5rem;
+}
+
+.summary-table th:first-child,
+.summary-table td:first-child {
+    text-align: center;
+}
